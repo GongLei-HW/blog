@@ -1,0 +1,88 @@
+# ──────────────────────────────────────────────
+# 站点基础信息
+# ──────────────────────────────────────────────
+# 本地用 "/"（根路径预览清爽）；生产 baseURL 由 .github/workflows/hugo.yml 根据
+# 仓库名自动推断覆盖（项目站 → owner.github.io/repo/，根站 → owner.github.io/）。
+baseURL = "/"
+locale = "zh-cn"
+defaultContentLanguage = "zh"
+title = "我的技术博客"
+theme = "PaperMod"
+paginate = 10
+enableRobotsTXT = true
+enableEmoji = true
+
+# ──────────────────────────────────────────────
+# PaperMod 主题参数
+# ──────────────────────────────────────────────
+[params]
+  author = "<你的名字>"
+  description = "LLM 推理 / 分布式系统 / Rust 的实践与笔记"
+  defaultTheme = "auto"          # auto | light | dark
+  ShowReadingTime = true
+  ShowWordCount = true
+  ShowPostNavLinks = true
+  ShowBreadCrumbs = true
+  ShowCodeCopyButtons = true     # 代码块右上角「复制」按钮
+  ShowToc = true                 # 文章页显示目录
+  TocOpen = false
+  editPost = ""                  # 留空关闭「编辑此页」
+
+  [params.homeInfoParams]
+    Title = "你好 👋"
+    Content = """
+    这里记录我在 **LLM 推理、分布式系统、Rust** 方面的实践与思考。
+    偶尔写点踩坑笔记，免得下次再掉同一个坑。
+    """
+
+  [[params.socialIcons]]
+    name = "github"
+    url = "https://github.com/<github-username>"
+
+  [[params.socialIcons]]
+    name = "rss"
+    url = "/index.xml"
+
+# 生成搜索用的 JSON 索引（配合 /search/ 页面）
+[outputs]
+  home = ["HTML", "RSS", "JSON"]
+
+# ──────────────────────────────────────────────
+# Markdown / 代码高亮
+# ──────────────────────────────────────────────
+[markup]
+  [markup.highlight]
+    style = "github-dark"
+    lineNos = false
+    codeFences = true
+    guessSyntax = true
+    tabWidth = 2
+  [markup.goldmark.renderer]
+    unsafe = true                # 允许在 Markdown 里内嵌 HTML
+
+# ──────────────────────────────────────────────
+# 导航菜单
+# ──────────────────────────────────────────────
+[[menu.main]]
+  identifier = "posts"
+  name = "文章"
+  url = "/posts/"
+  weight = 10
+
+[[menu.main]]
+  identifier = "archives"
+  name = "归档"
+  url = "/archives/"
+  weight = 20
+
+[[menu.main]]
+  identifier = "tags"
+  name = "标签"
+  url = "/tags/"
+  weight = 30
+
+[[menu.main]]
+  identifier = "search"
+  name = "搜索"
+  url = "/search/"
+  weight = 40

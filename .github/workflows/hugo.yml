@@ -1,0 +1,77 @@
+# 把 Hugo 站点部署到 GitHub Pages。
+# 触发：push 到 main 分支，或手动在 Actions 页面点 "Run workflow"。
+name: Deploy Hugo to GitHub Pages
+
+on:
+  push:
+    branches: [main]
+  workflow_dispatch:
+
+permissions:
+  contents: read
+  pages: write
+  id-token: write   # deploy-pages 需要
+
+concurrency:
+  group: pages
+  cancel-in-progress: true
+
+jobs:
+  build:
+    runs-on: ubuntu-latest
+    env:
+      HUGO_VERSION: 0.163.2
+    steps:
+      - name: Install Hugo CLI (extended)
+        run: |
+          wget -O ${{ runner.temp }}/hugo.deb \
+            https://github.com/gohugoio/hugo/releases/download/v${HUGO_VERSION}/hugo_extended_${HUGO_VERSION}_linux-amd64.deb
+          sudo dpkg -i ${{ runner.temp }}/hugo.deb
+
+      - name: Checkout
+        uses: actions/checkout@v4
+        with:
+          submodules: recursive   # 拉取 themes/PaperMod
+          fetch-depth: 0
+
+      - name: Setup Pages
+        id: pages
+        uses: actions/configure-pages@v5
+
+      # 从仓库名自动推断生产 baseURL，无需手填用户名：
+      #   项目站 owner/blog        -> https://owner.github.io/blog/
+      #   根站   owner/owner.github.io -> https://owner.github.io/
+      - name: Compute baseURL
+        id: base
+        run: |
+          REPO="${{ github.repository }}"
+          OWNER="$(echo "${REPO%%/*}" | tr '[:upper:]' '[:lower:]')"  # Pages URL 规范为小写
+          NAME="${REPO#*/}"
+          if [ "$NAME" = "${OWNER}.github.io" ]; then
+            echo "url=https://${OWNER}.github.io/" >> "$GITHUB_OUTPUT"
+          else
+            echo "url=https://${OWNER}.github.io/${NAME}/" >> "$GITHUB_OUTPUT"
+          fi
+
+      - name: Build with Hugo
+        run: |
+          hugo \
+            --gc \
+            --minify \
+            --baseURL "${{ steps.base.outputs.url }}"
+
+      - name: Upload artifact
+        uses: actions/upload-pages-artifact@v3
+        with:
+          path: ./public
+
+  deploy:
+    needs: build
+    runs-on: ubuntu-latest
+    environment:
+      name: github-pages
+      url: ${{ steps.deployment.outputs.page_url }}
+    steps:
+      - name: Deploy to GitHub Pages
+        id: deployment
+        uses: actions/deploy-pages@v4
